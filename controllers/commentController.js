@@ -71,15 +71,25 @@ module.exports = {
     const comments = await getAllComments(feed);
     const commentsWithVotes = await getAllCommentsWithVotes(comments);
 
+    const vote1Arr = [];
+    const vote2Arr = [];
+
     const groupByVotes = commentsWithVotes.map(comment => {
       const grouped = groupBy(comment.votes, "value");
       comment.votes = { ...grouped };
 
-      for (let vote in comment.votes) {
-        const voterArr = [];
-        voterArr.push(...comment.votes[vote].map(v => v._voter));
-        comment.votes[vote] = voterArr;
+      if (Object.keys(comment.votes).length > 0) {
+        vote1Arr.push(...comment.votes["1"].map(v => v._voter));
+        vote2Arr.push(...comment.votes["-1"].map(v => v._voter));
+        comment.votes["1"] = vote1Arr;
+        comment.votes["-1"] = vote2Arr;
       }
+
+      // for (let vote in comment.votes) {
+      //   const voterArr = [];
+      //   voterArr.push(...comment.votes[vote].map(v => v._voter));
+      //   comment.votes[vote] = voterArr;
+      // }
 
       return comment;
     });
