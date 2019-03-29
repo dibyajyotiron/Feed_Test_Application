@@ -77,19 +77,11 @@ module.exports = {
     const groupByVotes = commentsWithVotes.map(comment => {
       const grouped = groupBy(comment.votes, "value");
       comment.votes = { ...grouped };
-
-      if (Object.keys(comment.votes).length > 0) {
-        vote1Arr.push(...comment.votes["1"].map(v => v._voter));
-        vote2Arr.push(...comment.votes["-1"].map(v => v._voter));
-        comment.votes["1"] = vote1Arr;
-        comment.votes["-1"] = vote2Arr;
+      for (let vote in comment.votes) {
+        const voterArr = [];
+        voterArr.push(...comment.votes[vote].map(v => v._voter));
+        comment.votes[vote] = voterArr;
       }
-
-      // for (let vote in comment.votes) {
-      //   const voterArr = [];
-      //   voterArr.push(...comment.votes[vote].map(v => v._voter));
-      //   comment.votes[vote] = voterArr;
-      // }
 
       return comment;
     });
