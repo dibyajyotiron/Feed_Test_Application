@@ -1,0 +1,5 @@
+node_modules
+*.0x
+dev.js
+.env
+logs
