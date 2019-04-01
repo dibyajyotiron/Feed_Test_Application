@@ -3,3 +3,4 @@ node_modules
 dev.js
 .env
 logs
+isolate-*
