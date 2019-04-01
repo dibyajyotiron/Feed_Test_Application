@@ -4,7 +4,7 @@
   "description": "A flexible microservice for creating feeds",
   "main": "app.js",
   "scripts": {
-    "dev": "NODE_ENV=development nodemon app.js",
+    "dev": "NODE_ENV=development nodemon cluster.js",
     "prod": "NODE_ENV=production nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
