@@ -1,7 +1,8 @@
 const { Comment, validate } = require("../models/comment");
 const { Vote } = require("../models/vote");
-const uuid = require("uuid/v1");
+const io = require("../services/socket");
 
+const uuid = require("uuid/v1");
 const { isEqual, countBy, groupBy } = require("lodash");
 
 async function getAllComments(feed) {
@@ -64,15 +65,13 @@ module.exports = {
     });
 
     await comment.save();
+    io.getIO().emit("comments", { action: "create", comment });
     return res.json({ success: true, message: "Comment posted!" });
   },
   getComments: async (req, res) => {
     const feed = res.locals.feed;
     const comments = await getAllComments(feed);
     const commentsWithVotes = await getAllCommentsWithVotes(comments);
-
-    const vote1Arr = [];
-    const vote2Arr = [];
 
     const groupByVotes = commentsWithVotes.map(comment => {
       const grouped = groupBy(comment.votes, "value");
