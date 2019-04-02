@@ -4,3 +4,4 @@ dev.js
 .env
 logs
 isolate-*
+processed.*
