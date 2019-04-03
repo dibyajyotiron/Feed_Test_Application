@@ -10,13 +10,7 @@ const feedSchema = new Schema({
   uid: String,
   description: String,
   owner: user,
-  _element: {
-    name: {
-      type: String,
-      required: true
-    },
-    uid: { type: String, required: true }
-  },
+  _element: { type: String, required: true },
   data: Object,
   createdOn: {
     type: Date,
@@ -30,12 +24,7 @@ function validate(feed) {
   const schema = {
     name: Joi.string().max(100),
     description: Joi.string().max(500),
-    _element: Joi.object()
-      .keys({
-        name: Joi.string().required(),
-        uid: Joi.string().required()
-      })
-      .required(),
+    _element: Joi.string().required(),
     readUsers: Joi.array()
       .items(Joi.object().keys(getUserValidSchema("read")))
       .min(1),
