@@ -3,23 +3,22 @@ const { Schema } = mongoose;
 const { user } = require("./mixin");
 const Joi = require("joi");
 
-const commentSchema = new Schema({
-  uid: String,
-  comment: { type: String, trim: true, required: true },
-  _owner: { type: user },
-  _parentCommentUid: {
-    type: String
+const commentSchema = new Schema(
+  {
+    uid: String,
+    comment: { type: String, trim: true, required: true },
+    _owner: { type: user },
+    _parentCommentUid: {
+      type: String
+    },
+    _feed: {
+      type: Schema.Types.ObjectId,
+      ref: "Feed"
+    },
+    data: Object
   },
-  _feed: {
-    type: Schema.Types.ObjectId,
-    ref: "Feed"
-  },
-  postedOn: {
-    type: Date,
-    default: Date.now
-  },
-  data: Object
-});
+  { timestamps: true }
+);
 
 function validate(comment) {
   const schema = {
