@@ -6,8 +6,8 @@ const uuid = require("uuid/v1");
 const { groupBy } = require("lodash");
 
 async function getAllComments(feed, queryParams = {}) {
-  const pageSize = parseInt(queryParams.page_size || 15);
-  const pageNumber = parseInt(queryParams.page_number || 1);
+  const pageSize = parseInt(queryParams.page_size || 15, 10);
+  const pageNumber = parseInt(queryParams.page_number || 1, 10);
 
   const comments = await Comment.find({ _feed: feed })
     .sort({ createdAt: -1 })
