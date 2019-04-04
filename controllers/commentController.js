@@ -5,24 +5,30 @@ const io = require("../services/socket");
 const uuid = require("uuid/v1");
 const { isEqual, countBy, groupBy } = require("lodash");
 
-async function getAllComments(feed) {
-  const comments = await Comment.find({ _feed: feed });
+async function getAllComments(feed, queryParams = {}) {
+  const pageSize = parseInt(queryParams.page_size || 15);
+  const pageNumber = parseInt(queryParams.page_number || 1);
 
-  const mappedComments = comments.map(({ comment, _owner, _feed, _parentCommentUid, uid, postedOn }) => {
+  const comments = await Comment.find({ _feed: feed })
+    .sort({ createdAt: -1 })
+    .skip(pageSize * (pageNumber - 1))
+    .limit(pageSize);
+
+  const mappedComments = comments.map(({ comment, _owner, _feed, _parentCommentUid, uid, createdAt }) => {
     return {
       comment,
-      _owner,
-      _feed: _feed.uid,
+      owner: _owner,
+      feed: _feed.uid,
       uid,
-      _parentCommentUid,
-      postedOn
+      parentCommentUid: _parentCommentUid,
+      createdAt
     };
   });
 
   return mappedComments;
 }
 async function getAllCommentsWithVotes(comments) {
-  const votes = await Vote.aggregate([
+  const populateComments = [
     {
       $lookup: {
         from: "comments",
@@ -31,7 +37,10 @@ async function getAllCommentsWithVotes(comments) {
         as: "_comment"
       }
     },
-    { $unwind: "$_comment" },
+    { $unwind: "$_comment" }
+  ];
+
+  const projectComments = [
     {
       $project: {
         _id: 0,
@@ -41,7 +50,9 @@ async function getAllCommentsWithVotes(comments) {
         _comment: "$_comment.uid"
       }
     }
-  ]);
+  ];
+
+  const votes = await Vote.aggregate([...populateComments, ...projectComments]);
 
   comments.forEach(comment => {
     comment.votes = votes.filter(vote => vote._comment === comment.uid);
@@ -51,7 +62,7 @@ async function getAllCommentsWithVotes(comments) {
 }
 
 module.exports = {
-  postComment: async (req, res) => {
+  createCommentOrReply: async (req, res) => {
     const _owner = {
       uid: req.user.uid,
       email: req.user.email
@@ -63,14 +74,16 @@ module.exports = {
       _feed: res.locals.feed,
       uid: uuid()
     });
-
+    if (res.locals.comment) {
+      comment._parentCommentUid = req.params.commentUID;
+    }
     await comment.save();
     io.getIO().emit("comments", { action: "create", comment });
     return res.json({ success: true, message: "Comment posted!" });
   },
   getComments: async (req, res) => {
     const feed = res.locals.feed;
-    const comments = await getAllComments(feed);
+    const comments = await getAllComments(feed, req.query);
     const commentsWithVotes = await getAllCommentsWithVotes(comments);
 
     const groupByVotes = commentsWithVotes.map(comment => {
