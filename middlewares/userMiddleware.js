@@ -111,13 +111,42 @@ const hasRoles = roles => {
     return next();
   };
 };
+const checkPermission = (resource, perm) => {
+  return (req, res, next) => {
+    const newResource = res.locals[resource];
 
-// TODO: refactor getusers, check readusers, writeusers in viewscontroller to use okta search by org
+    const userLabels = req.user.labels || [];
 
+    const labelsRead = newResource.labelsRead || [];
+    const labelsWrite = newResource.labelsWrite || [];
+
+    const readUsersList = newResource.readUsers.map(user => user.uid);
+    const writeUsersList = newResource.writeUsers.map(user => user.uid);
+
+    const readLabelsList = labelsRead.some(label => userLabels.indexOf(label) >= 0);
+    const writeLabelsList = labelsWrite.some(label => userLabels.indexOf(label) >= 0);
+
+    const readUserAccess = readUsersList.includes(req.user.uid) || writeUsersList.includes(req.user.uid);
+    const writeUserAccess = writeUsersList.includes(req.user.uid);
+
+    const readLabelsAccess = readLabelsList || writeLabelsList;
+    const writeLabelsAccess = writeLabelsList;
+
+    const readAccess = readUserAccess || readLabelsAccess ? true : false;
+    const writeAccess = writeUserAccess || writeLabelsAccess ? true : false;
+
+    if (perm === "read" && readAccess) {
+      return next();
+    } else if (perm === "write" && writeAccess) {
+      return next();
+    } else return res.status(403).json({ error: true, message: "You do not have the necessary permissions!" });
+  };
+};
 module.exports = {
   verifyToken,
   isActive,
   isBot,
   hasRoles,
+  checkPermission,
   checkOwnerOrAllowedRoles
 };
