@@ -1,5 +1,4 @@
 const { Vote } = require("../models/vote");
-const uuid = require("uuid/v1");
 
 module.exports = {
   vote: async (req, res, next) => {

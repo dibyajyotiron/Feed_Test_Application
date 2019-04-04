@@ -1,6 +1,5 @@
 const _ = require("lodash"),
   { ALLOWED_ROLES } = require("../constants"),
-  keys = require("../config/keys"),
   { cacheStore } = require("../services/cache"),
   { oktaClient, oktaJwtVerifier, getAppUsers } = require("../services/okta");
 
@@ -67,7 +66,7 @@ const verifyToken = async (req, res, next) => {
       req.user.obj = { uid: req.user.uid.toString("hex"), email: req.user.email };
       return next();
     } else if (tokenType.toUpperCase() === "TOKEN") {
-      user = await handleToken(accessToken);
+      let user = await handleToken(accessToken);
       if (!user) return res.json({ error: true, message: "Invalid token" });
       req.user = user;
       req.user.obj = { uid: req.user.uid.toString("hex"), email: req.user.email };

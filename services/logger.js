@@ -40,7 +40,7 @@ const logger = winston.createLogger({
 
 logger.exceptions.handle(new winston.transports.File({ filename: `${appDir}/logs/exceptions/uncaughtExceptions.log` }));
 
-process.on("unhandledRejection", (reason, p) => {
+process.on("unhandledRejection", reason => {
   throw reason;
 });
 

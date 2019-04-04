@@ -13,7 +13,7 @@ if (cluster.isMaster) {
     cluster.fork();
   }
 
-  cluster.on("exit", (worker, code, signal) => {
+  cluster.on("exit", worker => {
     logger.warn(`worker ${worker.process.pid} died`);
     cluster.fork(); // Create a New Worker, If Worker is Dead
   });

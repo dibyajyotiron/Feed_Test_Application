@@ -1,9 +1,9 @@
-const { Comment, validate } = require("../models/comment");
+const { Comment } = require("../models/comment");
 const { Vote } = require("../models/vote");
 const io = require("../services/socket");
 
 const uuid = require("uuid/v1");
-const { isEqual, countBy, groupBy } = require("lodash");
+const { groupBy } = require("lodash");
 
 async function getAllComments(feed, queryParams = {}) {
   const pageSize = parseInt(queryParams.page_size || 15);
