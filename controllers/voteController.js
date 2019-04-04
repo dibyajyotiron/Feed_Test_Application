@@ -21,6 +21,5 @@ module.exports = {
 
     await vote.save();
     return res.json({ success: true, message: "Thanks for your vote!" });
-  },
-  getAllVotersByComment: async (req, res, next) => {}
+  }
 };
