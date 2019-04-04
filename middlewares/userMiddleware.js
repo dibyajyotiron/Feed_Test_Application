@@ -92,7 +92,7 @@ const checkOwnerOrAllowedRoles = resource => {
     if ((source.owner.uid === req.user.uid && source.owner.email === req.user.email) || ALLOWED_ROLES.includes(req.user.role)) {
       return next();
     }
-    return res.status(UNAUTHORIZED).json({
+    return res.status(403).json({
       error: true,
       message: "You do not have enough permissions!"
     });
