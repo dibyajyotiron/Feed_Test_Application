@@ -1,6 +1,6 @@
 const router = require("express").Router(),
   { verifyToken, isActive, hasRoles, checkPermission } = require("../middlewares/userMiddleware"),
-  { validateFeedBody, validateFeed, validateFeedInComment } = require("../middlewares/feedMiddleware"),
+  { validateFeedBody, validateFeed, validateFeedInComment, validateFeedInElement } = require("../middlewares/feedMiddleware"),
   { validateComment, validateCommentBody } = require("../middlewares/commentMiddleware"),
   { ALLOWED_ROLES } = require("../constants"),
   { createOrUpdateFeed, getFeedByUID, addUserToFeed, getAllFeeds, getFeedForElement } = require("../controllers/feedController"),
@@ -23,7 +23,7 @@ router.put("/:uid", validateFeed, checkPermission("feed", "write"), createOrUpda
 router.get("/:uid", validateFeed, checkPermission("feed", "read"), getFeedByUID);
 
 // get a feed by elementUid
-router.get("/elements/:elementUid", getFeedForElement);
+router.get("/elements/:elementUid", validateFeedInElement, getFeedForElement);
 
 // add users to a feed
 router.post("/:uid", validateFeed, checkPermission("feed", "write"), addUserToFeed);

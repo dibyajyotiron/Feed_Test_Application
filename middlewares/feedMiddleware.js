@@ -14,6 +14,7 @@ module.exports = {
     res.locals.feed = feed;
     return next();
   },
+
   validateFeedBody: (req, res, next) => {
     const { readUsers, writeUsers } = req.body;
 
@@ -38,6 +39,14 @@ module.exports = {
         error: true,
         message: "Comment doesn't belong to the feed"
       });
+    return next();
+  },
+
+  validateFeedInElement: async (req, res, next) => {
+    const feed = await Feed.findOne({ _element: req.params.elementUid });
+
+    if (!feed) return res.status(404).json({ error: true, message: "Provide correct element uid!" });
+    res.locals.feed = feed;
     return next();
   },
 

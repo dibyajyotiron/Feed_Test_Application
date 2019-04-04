@@ -111,7 +111,7 @@ module.exports = {
     return res.json(newFeed);
   },
   getFeedForElement: async (req, res) => {
-    const feed = await Feed.findOne({ _element: req.params.elementUid });
+    const feed = res.locals.feed;
     return res.json(parseFeed(feed));
   }
 };
