@@ -18,7 +18,11 @@ const feedSchema = new Schema(
     writeUsers: { type: [user] },
     labelsRead: [String],
     labelsWrite: [String],
-    properties: Object
+    properties: Object,
+    active: {
+      type: Boolean,
+      default: true
+    }
   },
   { timestamps: true }
 );
