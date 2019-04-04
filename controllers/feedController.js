@@ -1,60 +1,117 @@
-const { Feed, validate } = require("../models/feed");
-const uuid = require("uuid/v1");
+const { Feed } = require("../models/feed");
+const { checkReadWriteConflict } = require("../middlewares/feedMiddleware");
 
-const { isEqual, uniqBy } = require("lodash");
+const uuid = require("uuid/v1");
+const { uniqBy, uniq } = require("lodash");
+
+function parseFeed(feed) {
+  ({ data, uid, owner, description, readUsers, writeUsers, createdAt, labelsRead, labelsWrite, properties, _appUid, _element } = feed);
+  const newFeed = { data, uid, owner, description, readUsers, writeUsers, createdAt, labelsRead, labelsWrite, properties, _appUid, _element };
+  return newFeed;
+}
+
+function addReadAndWriteUsers(resource, readUsers, writeUsers) {
+  resource.readUsers.push(...uniqBy(readUsers, userObj => userObj.uid));
+  resource.writeUsers.push(...uniqBy(writeUsers, userObj => userObj.uid));
+
+  resource.readUsers = uniqBy(resource.readUsers, userObj => userObj.uid);
+  resource.writeUsers = uniqBy(resource.writeUsers, userObj => userObj.uid);
+
+  return resource;
+}
+
+function addReadWriteLabels(resource, labelsRead, labelsWrite) {
+  resource.labelsRead.push(...uniq(labelsRead));
+  resource.labelsWrite.push(...uniq(labelsWrite));
+
+  resource.labelsRead = uniq(resource.labelsRead);
+  resource.labelsWrite = uniq(resource.labelsWrite);
+
+  return resource;
+}
 
 module.exports = {
   test: async (req, res) => {
     return res.json({ success: true, message: "Working" });
   },
-  createFeed: async (req, res) => {
-    const { name, description, _element, data, readUsers, writeUsers } = req.body;
+  createOrUpdateFeed: async (req, res) => {
+    let feed;
+    const { name, description, _element, _appUid, data, readUsers, writeUsers, properties, labelsRead, labelsWrite } = req.body;
 
-    const owner = {
-      uid: req.user.uid,
-      email: req.user.email
-    };
+    if (req.method === "PUT") {
+      feed = res.locals.feed;
+      feed.name = name ? name : feed.name;
+      feed.description = description ? description : feed.description;
+      feed._element = _element ? _element : feed._element;
+      feed._appUid = _appUid ? _appUid : feed._appUid;
+      feed.data = data ? data : feed._data;
+      feed.properties = properties ? properties : feed.properties;
+      feed.labelsRead = labelsRead ? [...labelsRead] : feed.labelsRead;
+      feed.labelsWrite = labelsWrite ? [...labelsWrite] : feed.labelsWrite;
+    } else {
+      const owner = {
+        uid: req.user.uid,
+        email: req.user.email
+      };
 
-    const feed = new Feed({
-      name,
-      uid: uuid(),
-      owner,
-      description,
-      _element,
-      data,
-      readUsers,
-      writeUsers
+      feed = new Feed({
+        name,
+        uid: uuid(),
+        owner,
+        description,
+        _appUid,
+        _element,
+        data,
+        properties
+      });
+
+      feed = addReadAndWriteUsers(feed, readUsers, writeUsers);
+      feed = addReadWriteLabels(feed, labelsRead, labelsWrite);
+    }
+    await feed.save();
+
+    return res.json({
+      success: true,
+      message: `Successfully ${req.method === "PUT" ? "updated" : "created"} the feed`
     });
+  },
+  attachDataToFeed: async (req, res) => {
+    const feed = res.locals.feed;
+    feed.data.push(req.body.data);
     await feed.save();
     return res.json({
       success: true,
-      message: "Successfully created feed!"
+      message: "Successfully attached data!"
     });
   },
   addUserToFeed: async (req, res) => {
-    const feed = res.locals.feed;
+    let feed = res.locals.feed;
 
     let { readUsers, writeUsers } = req.body;
 
-    if (isEqual(readUsers, writeUsers)) return res.json({ error: true, message: "Read and write users are same!" });
+    if (checkReadWriteConflict(readUsers, writeUsers)) return res.json({ error: true, message: "Read and write users are conflicting!" });
 
-    feed.readUsers.push(...uniqBy(readUsers, user => user.uid));
-    feed.writeUsers.push(...uniqBy(writeUsers, user => user.uid));
-
-    feed.readUsers = uniqBy(feed.readUsers, user => user.uid);
-    feed.writeUsers = uniqBy(feed.writeUsers, user => user.uid);
+    feed = addReadAndWriteUsers(feed, readUsers, writeUsers);
 
     await feed.save();
+
     return res.json({
       message: "Successfully added users to Feed"
     });
   },
   getAllFeeds: async (req, res) => {
     const feeds = await Feed.find();
-    res.json(feeds);
+    return res.json(feeds);
   },
-  getFeedByUID: async (req, res) => {
-    const feed = res.locals.feed;
-    res.json(feed);
+  getFeedByUID: (req, res) => {
+    let feed = res.locals.feed;
+
+    ({ data, uid, owner, description, readUsers, writeUsers, createdAt, labelsRead, labelsWrite } = feed);
+    const newFeed = { data, uid, owner, description, readUsers, writeUsers, createdAt, labelsRead, labelsWrite };
+    return res.json(newFeed);
+  },
+  getFeedForElement: async (req, res) => {
+    const feed = await Feed.findOne({ _element: req.params.elementUid });
+    return res.json(parseFeed(feed));
   }
 };
