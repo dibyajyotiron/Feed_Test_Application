@@ -70,8 +70,7 @@ const verifyToken = async (req, res, next) => {
         if (!user) return res.json({ error: true, message: "Invalid token" });
         req.user = user;
         req.user.obj = { uid: req.user.uid.toString("hex"), email: req.user.email };
-        next();
-
+        return next();
       default:
         return res.json({ error: true, message: "Not implemented yet." });
     }
