@@ -74,29 +74,6 @@ const verifyToken = async (req, res, next) => {
       default:
         return res.json({ error: true, message: "Not implemented yet." });
     }
-
-    if (tokenType.toUpperCase() === "JWT") {
-      let jwt = await oktaJwtVerifier.verifyAccessToken(accessToken);
-
-      req.user = {
-        status: jwt.claims.status,
-        role: jwt.claims.role,
-        uid: jwt.claims.uid,
-        email: jwt.claims.email,
-        organization: jwt.claims.organization,
-        is_owner: jwt.claims.is_owner,
-        is_manager: jwt.claims.is_manager,
-        labels: jwt.claims.labels
-      };
-      req.user.obj = { uid: req.user.uid.toString("hex"), email: req.user.email };
-      return next();
-    } else if (tokenType.toUpperCase() === "TOKEN") {
-      let user = await handleToken(accessToken);
-      if (!user) return res.json({ error: true, message: "Invalid token" });
-      req.user = user;
-      req.user.obj = { uid: req.user.uid.toString("hex"), email: req.user.email };
-      next();
-    } else return res.json({ error: true, message: "Not implemented yet." });
   } catch (error) {
     return res.json({ error: true, message: error.message });
   }
