@@ -48,6 +48,8 @@ module.exports = {
       feed.properties = properties ? properties : feed.properties;
       feed.labelsRead = labelsRead ? [...labelsRead] : feed.labelsRead;
       feed.labelsWrite = labelsWrite ? [...labelsWrite] : feed.labelsWrite;
+      feed.readUsers = readUsers ? readUsers : feed.readUsers;
+      feed.writeUsers = writeUsers ? writeUsers : feed.writeUsers;
     } else {
       const owner = { uid: req.user.uid, email: req.user.email };
 
