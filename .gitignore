@@ -1,6 +1,7 @@
 node_modules
 *.0x
 dev.js
+test.js
 .env
 logs
 isolate-*
