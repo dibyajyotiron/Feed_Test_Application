@@ -1,7 +1,6 @@
 const { Feed } = require("../models/feed");
 const { checkReadWriteConflict } = require("../middlewares/feedMiddleware");
 
-const uuid = require("uuid/v1");
 const { uniqBy, uniq } = require("lodash");
 
 function addReadAndWriteUsers(resource, readUsers, writeUsers) {
@@ -25,10 +24,10 @@ function addReadWriteLabels(resource, labelsRead, labelsWrite) {
 }
 
 module.exports = {
-  test: async (req, res) => {
+  test(req, res) {
     return res.json({ success: true, message: "Working" });
   },
-  createOrUpdateFeed: async (req, res) => {
+  async createOrUpdateFeed(req, res) {
     let feed;
     const {
       name,
@@ -82,7 +81,7 @@ module.exports = {
       message: `Successfully ${req.method === "PUT" ? "updated" : "created"} the feed`
     });
   },
-  attachDataToFeed: async (req, res) => {
+  async attachDataToFeed(req, res) {
     const feed = res.locals.feed;
     feed.data.push(req.body.data);
     await feed.save();
@@ -91,7 +90,7 @@ module.exports = {
       message: "Successfully attached data!"
     });
   },
-  addUserToFeed: async (req, res) => {
+  async addUserToFeed(req, res) {
     let feed = res.locals.feed;
 
     let { readUsers, writeUsers } = req.body;
@@ -106,18 +105,18 @@ module.exports = {
       message: "Successfully added users to Feed"
     });
   },
-  getAllFeeds: async (req, res) => {
+  async getAllFeeds(req, res) {
     const feeds = await Feed.find();
     return res.json(feeds);
   },
-  getFeedByUID: (req, res) => {
+  getFeedByUID(req, res) {
     let feed = res.locals.feed;
 
     ({ data, uid, owner, description, readUsers, writeUsers, createdAt, labelsRead, labelsWrite } = feed);
     const newFeed = { data, uid, owner, description, readUsers, writeUsers, createdAt, labelsRead, labelsWrite };
     return res.json(newFeed);
   },
-  getFeedForElement: async (req, res) => {
+  getFeedForElement(req, res) {
     const feed = res.locals.feed.toJSON();
     delete feed._id;
     return res.json(feed);
