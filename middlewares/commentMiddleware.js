@@ -1,16 +1,8 @@
-const { Comment, validate } = require("../models/comment");
+const { Comment } = require("../models/comment");
+const { validateComment } = require("../models/joiSchema");
 
 module.exports = {
-  validateCommentBody: (req, res, next) => {
-    const { error } = validate(req.body);
-    if (error)
-      return res.status(400).json({
-        error: true,
-        message: error.details[0].message
-      });
-    return next();
-  },
-  validateComment: async (req, res, next) => {
+  async validateComment(req, res, next) {
     let comment;
     const { commentUID } = req.params;
     comment = await Comment.findOne({ uid: commentUID });
