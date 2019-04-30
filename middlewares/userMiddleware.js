@@ -136,11 +136,14 @@ const checkPermission = (resource, perm) => {
     const readAccess = readUserAccess || readLabelsAccess ? true : false;
     const writeAccess = writeUserAccess || writeLabelsAccess ? true : false;
 
-    if (perm === "read" && readAccess) {
-      return next();
-    } else if (perm === "write" && writeAccess) {
-      return next();
-    } else return res.status(403).json({ error: true, message: "You do not have the necessary permissions!" });
+    switch (true) {
+      case perm === "read" && readAccess:
+        return next();
+      case perm === "write" && writeAccess:
+        return next();
+      default:
+        return res.status(403).json({ error: true, message: "You do not have the necessary permissions!" });
+    }
   };
 };
 module.exports = {
