@@ -1,7 +1,9 @@
 const router = require("express").Router(),
   { verifyToken, isActive, hasRoles, checkPermission } = require("../middlewares/userMiddleware"),
-  { validateFeedBody, validateFeed, validateFeedInComment, validateFeedInElement } = require("../middlewares/feedMiddleware"),
-  { validateComment, validateCommentBody } = require("../middlewares/commentMiddleware"),
+  { validateFeedInComment, validateFeedInElement, validateFeed } = require("../middlewares/feedMiddleware"),
+  { validateComment } = require("../middlewares/commentMiddleware"),
+  { validateReqBody } = require("../middlewares/generic"),
+  { validateFeedSchema, validateCommentSchema } = require("../models/joiSchema"),
   { ALLOWED_ROLES } = require("../constants"),
   { createOrUpdateFeed, getFeedByUID, addUserToFeed, getAllFeeds, getFeedForElement } = require("../controllers/feedController"),
   { vote } = require("../controllers/voteController"),
@@ -14,7 +16,7 @@ router.use(isActive);
 router.get("/", hasRoles(ALLOWED_ROLES), getAllFeeds);
 
 // create a feed
-router.post("/", validateFeedBody, createOrUpdateFeed);
+router.post("/", validateReqBody(validateFeedSchema), createOrUpdateFeed);
 
 // update a feed
 router.put("/:uid", validateFeed, checkPermission("feed", "write"), createOrUpdateFeed);
@@ -32,7 +34,7 @@ router.post("/:uid", validateFeed, checkPermission("feed", "write"), addUserToFe
 router.get("/:uid/comments", validateFeed, checkPermission("feed", "read"), getComments);
 
 // create a comment
-router.post("/:uid/comments/", validateFeed, checkPermission("feed", "read"), validateCommentBody, createCommentOrReply);
+router.post("/:uid/comments/", validateFeed, checkPermission("feed", "read"), validateReqBody(validateCommentSchema), createCommentOrReply);
 
 // reply to a comment
 router.post(
@@ -41,7 +43,7 @@ router.post(
   checkPermission("feed", "read"),
   validateComment,
   validateFeedInComment,
-  validateCommentBody,
+  validateReqBody(validateCommentSchema),
   createCommentOrReply
 );
 
