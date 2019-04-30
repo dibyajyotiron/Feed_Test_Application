@@ -4,12 +4,6 @@ const { checkReadWriteConflict } = require("../middlewares/feedMiddleware");
 const uuid = require("uuid/v1");
 const { uniqBy, uniq } = require("lodash");
 
-function parseFeed(feed) {
-  ({ data, uid, owner, description, readUsers, writeUsers, createdAt, labelsRead, labelsWrite, properties, _appUid, _element } = feed);
-  const newFeed = { data, uid, owner, description, readUsers, writeUsers, createdAt, labelsRead, labelsWrite, properties, _appUid, _element };
-  return newFeed;
-}
-
 function addReadAndWriteUsers(resource, readUsers, writeUsers) {
   resource.readUsers.push(...uniqBy(readUsers, userObj => userObj.uid));
   resource.writeUsers.push(...uniqBy(writeUsers, userObj => userObj.uid));
@@ -36,18 +30,31 @@ module.exports = {
   },
   createOrUpdateFeed: async (req, res) => {
     let feed;
-    const { name, description, _element, _appUid, data, readUsers, writeUsers, properties, labelsRead, labelsWrite } = req.body;
+    const {
+      name,
+      description,
+      _element,
+      targetElementType,
+      targetElementUid,
+      targetElementStage,
+      data,
+      readUsers,
+      writeUsers,
+      properties,
+      labelsRead,
+      labelsWrite
+    } = req.body;
 
     if (req.method === "PUT") {
       feed = res.locals.feed;
       feed.name = name ? name : feed.name;
       feed.description = description ? description : feed.description;
       feed._element = _element ? _element : feed._element;
-      feed._appUid = _appUid ? _appUid : feed._appUid;
-      feed.data = data ? data : feed._data;
+
+      feed.data = data ? data : feed.data;
       feed.properties = properties ? properties : feed.properties;
-      feed.labelsRead = labelsRead ? [...labelsRead] : feed.labelsRead;
-      feed.labelsWrite = labelsWrite ? [...labelsWrite] : feed.labelsWrite;
+      feed.labelsRead = labelsRead.length ? [...labelsRead] : feed.labelsRead;
+      feed.labelsWrite = labelsWrite.length ? [...labelsWrite] : feed.labelsWrite;
       feed.readUsers = readUsers ? readUsers : feed.readUsers;
       feed.writeUsers = writeUsers ? writeUsers : feed.writeUsers;
     } else {
@@ -55,10 +62,11 @@ module.exports = {
 
       feed = new Feed({
         name,
-        uid: uuid(),
         owner,
         description,
-        _appUid,
+        targetElementType,
+        targetElementUid,
+        targetElementStage,
         _element,
         data,
         properties
@@ -67,7 +75,7 @@ module.exports = {
       feed = addReadAndWriteUsers(feed, readUsers, writeUsers);
       feed = addReadWriteLabels(feed, labelsRead, labelsWrite);
     }
-    await feed.save();
+    await feed.save(req);
 
     return res.json({
       success: true,
@@ -110,7 +118,8 @@ module.exports = {
     return res.json(newFeed);
   },
   getFeedForElement: async (req, res) => {
-    const feed = res.locals.feed;
-    return res.json(parseFeed(feed));
+    const feed = res.locals.feed.toJSON();
+    delete feed._id;
+    return res.json(feed);
   }
 };
