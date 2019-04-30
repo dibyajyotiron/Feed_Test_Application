@@ -1,4 +1,6 @@
-const { Feed, validate } = require("../models/feed");
+const { Feed } = require("../models/feed");
+const { validateFeedSchema } = require("../models/joiSchema");
+
 const { intersectionWith } = require("lodash");
 
 function checkReadWriteConflict(readUsers, writeUsers) {
@@ -8,29 +10,13 @@ function checkReadWriteConflict(readUsers, writeUsers) {
 
 module.exports = {
   checkReadWriteConflict,
-  validateFeed: async (req, res, next) => {
+  async validateFeed(req, res, next) {
     const feed = await Feed.findOne({ uid: req.params.uid });
     if (!feed) return res.status(404).json({ error: true, message: "Requested feed doesn't exist!" });
     res.locals.feed = feed;
     return next();
   },
-
-  validateFeedBody: (req, res, next) => {
-    const { readUsers, writeUsers } = req.body;
-
-    if (checkReadWriteConflict(readUsers, writeUsers)) return res.status(400).json({ error: true, message: "Read and write users are conflicting!" });
-
-    const { error } = validate(req.body);
-
-    if (error)
-      return res.status(400).json({
-        error: true,
-        message: error.message
-      });
-    return next();
-  },
-
-  validateFeedInComment: (req, res, next) => {
+  validateFeedInComment(req, res, next) {
     const feed = res.locals.feed;
     const comment = res.locals.comment;
 
@@ -42,15 +28,15 @@ module.exports = {
     return next();
   },
 
-  validateFeedInElement: async (req, res, next) => {
-    const feed = await Feed.findOne({ _element: req.params.elementUid });
+  async validateFeedInElement(req, res, next) {
+    const feed = await Feed.findOne({ targetElementUid: req.params.elementUid });
 
     if (!feed) return res.status(404).json({ error: true, message: "Provide correct element uid!" });
     res.locals.feed = feed;
     return next();
   },
 
-  checkFeedOwnerOrWritePerm: (req, res, next) => {
+  checkFeedOwnerOrWritePerm(req, res, next) {
     const feed = res.locals.feed;
     const writeUsers = feed.writeUsers.map(user => user.uid);
 
@@ -58,7 +44,7 @@ module.exports = {
       return res.status(403).json({ error: true, message: "You do not have the necessary permissions!" });
     return next();
   },
-  checkFeedReadWrite: (req, res, next) => {
+  checkFeedReadWrite(req, res, next) {
     const feed = res.locals.feed;
     const readUsers = feed.readUsers.map(user => user.uid);
     const writeUsers = feed.writeUsers.map(user => user.uid);
