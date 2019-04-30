@@ -12,5 +12,4 @@ require("./services/morgan")(app);
 
 require("./routes/index")(app);
 
-app.listen(port, () => winston.info(`Server started on ${port}...`));
-module.exports = app;
+module.exports = app.listen(port, () => winston.info(`Server started on ${port}...`));
