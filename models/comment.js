@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const { user } = require("./mixin");
-const Joi = require("joi");
 
 const commentSchema = new Schema(
   {
@@ -20,17 +19,6 @@ const commentSchema = new Schema(
   { timestamps: true }
 );
 
-function validate(comment) {
-  const schema = {
-    comment: Joi.string()
-      .max(500)
-      .required(),
-    _parentCommentUid: Joi.string(),
-    data: Joi.object()
-  };
-  return Joi.validate(comment, schema);
-}
-
 commentSchema.pre("find", function(next) {
   this.populate({
     path: "_feed"
@@ -45,4 +33,3 @@ commentSchema.pre("findOne", function(next) {
 });
 
 module.exports.Comment = mongoose.model("Comment", commentSchema);
-module.exports.validate = validate;
