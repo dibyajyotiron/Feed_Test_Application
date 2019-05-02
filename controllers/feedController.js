@@ -52,8 +52,8 @@ module.exports = {
 
       feed.data = data ? data : feed.data;
       feed.properties = properties ? properties : feed.properties;
-      feed.labelsRead = labelsRead.length ? [...labelsRead] : feed.labelsRead;
-      feed.labelsWrite = labelsWrite.length ? [...labelsWrite] : feed.labelsWrite;
+      feed.labelsRead = labelsRead ? [...labelsRead] : feed.labelsRead;
+      feed.labelsWrite = labelsWrite ? [...labelsWrite] : feed.labelsWrite;
       feed.readUsers = readUsers ? readUsers : feed.readUsers;
       feed.writeUsers = writeUsers ? writeUsers : feed.writeUsers;
     } else {
