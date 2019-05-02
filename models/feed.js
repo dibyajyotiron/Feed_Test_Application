@@ -37,7 +37,7 @@ feedSchema.plugin(targetElementToElementPlugin);
 feedSchema.pre("save", function(next, req) {
   if (!this.writeUsers.some(user => user.uid === this.owner.uid)) {
     this.writeUsers.push({ uid: this.owner.uid, email: this.owner.email });
-    this.uid = uuid();
+    this.uid = this.uid ? this.uid : uuid();
     this._element = req.newElement ? req.newElement._id : this._element;
   }
   return next();
