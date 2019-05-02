@@ -1,4 +1,4 @@
-const ObjectId = require("mongoose").Types.ObjectId;
+const { ObjectId } = require("mongoose").Types;
 
 const allFeeds = [
   {
@@ -15,7 +15,7 @@ const allFeeds = [
     targetElementType: "group",
     targetElementUid: "12sdsdsa-asdsa3-sadsad-sweq",
     targetElementStage: "Therm",
-    _element: "5cc6cf126027756548893f0f",
+    _element: ObjectId("5cc6d3846b2afc401a2a4803"),
     description: "Hello Comment",
     readUsers: [
       {
@@ -60,7 +60,7 @@ const allFeeds = [
       email: "user1@scm.com"
     },
     description: "Third Feed",
-    _appUid: "xyzApp",
+    _element: ObjectId("5cc6d3846b2afc401a2a4803"),
     targetElementUid: "Abc1233423",
     targetElementType: "Abc1233423",
     targetElementStage: "Therm",
@@ -101,7 +101,7 @@ const allFeeds = [
       email: "user1@scm.com"
     },
     description: "new Feed",
-    _appUid: "xyzApp",
+    _element: ObjectId("5cc6d3846b2afc401a2a4803"),
     targetElementUid: "Abc1233423",
     targetElementType: "Abc1233423",
     targetElementStage: "Therm",
@@ -245,6 +245,8 @@ const allVotes = [
   }
 ];
 
+const allElements = [{ _id: ObjectId("5cc6d3846b2afc401a2a4803"), type: "group", data: "Therm", uid: "e75083a0-6a67-11e9-b2db-7170f20a862a", __v: 0 }];
+
 function populateDB(db, collection, data) {
   // insert data into db
   db.collection(collection).insertMany(data);
@@ -253,4 +255,5 @@ module.exports = db => {
   populateDB(db, "feeds", allFeeds);
   populateDB(db, "votes", allVotes);
   populateDB(db, "comments", allComments);
+  populateDB(db, "elements", allElements);
 };
