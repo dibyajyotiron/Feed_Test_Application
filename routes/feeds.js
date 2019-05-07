@@ -5,21 +5,24 @@ const router = require("express").Router(),
   { validateReqBody } = require("../middlewares/generic"),
   { validateFeedSchema, validateCommentSchema } = require("../models/joiSchema"),
   { ALLOWED_ROLES } = require("../constants"),
-  { createOrUpdateFeed, getFeedByUID, addUserToFeed, getAllFeeds, getFeedForElement } = require("../controllers/feedController"),
+  { createOrUpdateOrDeleteFeed, getFeedByUID, addUserToFeed, getAllFeeds, getFeedForElement } = require("../controllers/feedController"),
   { vote } = require("../controllers/voteController"),
   { getComments, createCommentOrReply } = require("../controllers/commentController");
 
 router.use(verifyToken);
 router.use(isActive);
 
+// create a feed
+router.post("/", validateReqBody(validateFeedSchema), createOrUpdateOrDeleteFeed);
+
 // get all feeds
 router.get("/", hasRoles(ALLOWED_ROLES), getAllFeeds);
 
-// create a feed
-router.post("/", validateReqBody(validateFeedSchema), createOrUpdateFeed);
-
 // update a feed
-router.put("/:uid", validateFeed, checkPermission("feed", "write"), createOrUpdateFeed);
+router.put("/:uid", validateFeed, checkPermission("feed", "write"), createOrUpdateOrDeleteFeed);
+
+// delete a feed
+router.delete("/:uid", validateFeed, hasRoles(ALLOWED_ROLES), checkPermission("feed", "owner"), createOrUpdateOrDeleteFeed);
 
 // get a particular feed
 router.get("/:uid", validateFeed, checkPermission("feed", "read"), getFeedByUID);
