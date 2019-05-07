@@ -1,5 +1,6 @@
 const { Feed } = require("../models/feed");
 const { checkReadWriteConflict } = require("../middlewares/feedMiddleware");
+const { activateClient } = require("../services/broker/producer");
 
 const { uniqBy, uniq } = require("lodash");
 
@@ -27,7 +28,7 @@ module.exports = {
   test(req, res) {
     return res.json({ success: true, message: "Working" });
   },
-  async createOrUpdateFeed(req, res) {
+  async createOrUpdateOrDeleteFeed(req, res) {
     let feed;
     const {
       name,
@@ -44,41 +45,49 @@ module.exports = {
       labelsWrite
     } = req.body;
 
-    if (req.method === "PUT") {
-      feed = res.locals.feed;
-      feed.name = name ? name : feed.name;
-      feed.description = description ? description : feed.description;
-      feed._element = _element ? _element : feed._element;
+    switch (req.method) {
+      case "PUT":
+        feed = res.locals.feed;
+        feed.name = name ? name : feed.name;
+        feed.description = description ? description : feed.description;
+        feed._element = _element ? _element : feed._element;
 
-      feed.data = data ? data : feed.data;
-      feed.properties = properties ? properties : feed.properties;
-      feed.labelsRead = labelsRead ? [...labelsRead] : feed.labelsRead;
-      feed.labelsWrite = labelsWrite ? [...labelsWrite] : feed.labelsWrite;
-      feed.readUsers = readUsers ? readUsers : feed.readUsers;
-      feed.writeUsers = writeUsers ? writeUsers : feed.writeUsers;
-    } else {
-      const owner = { uid: req.user.uid, email: req.user.email };
+        feed.data = data ? data : feed.data;
+        feed.properties = properties ? properties : feed.properties;
+        feed.labelsRead = labelsRead ? [...labelsRead] : feed.labelsRead;
+        feed.labelsWrite = labelsWrite ? [...labelsWrite] : feed.labelsWrite;
+        feed.readUsers = readUsers ? readUsers : feed.readUsers;
+        feed.writeUsers = writeUsers ? writeUsers : feed.writeUsers;
+        break;
+      case "POST":
+        const owner = { uid: req.user.uid, email: req.user.email };
 
-      feed = new Feed({
-        name,
-        owner,
-        description,
-        targetElementType,
-        targetElementUid,
-        targetElementStage,
-        _element,
-        data,
-        properties
-      });
+        feed = new Feed({
+          name,
+          owner,
+          description,
+          targetElementType,
+          targetElementUid,
+          targetElementStage,
+          _element,
+          data,
+          properties
+        });
 
-      feed = addReadAndWriteUsers(feed, readUsers, writeUsers);
-      feed = addReadWriteLabels(feed, labelsRead, labelsWrite);
+        feed = addReadAndWriteUsers(feed, readUsers, writeUsers);
+        feed = addReadWriteLabels(feed, labelsRead, labelsWrite);
+        activateClient(feed, "FEED_CREATED", "/queue/t1");
+        break;
+      case "DELETE":
+        feed = res.locals.feed;
+        feed.active = false;
     }
-    await feed.save(req);
+
+    // await feed.save(req);
 
     return res.json({
       success: true,
-      message: `Successfully ${req.method === "PUT" ? "updated" : "created"} the feed`
+      message: `Successfully ${req.method === "PUT" ? "updated" : req.method === "DELETE" ? "removed" : "created"} the feed`
     });
   },
   async attachDataToFeed(req, res) {
