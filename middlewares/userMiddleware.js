@@ -121,6 +121,8 @@ const checkPermission = (resource, perm) => {
     const labelsRead = newResource.labelsRead || [];
     const labelsWrite = newResource.labelsWrite || [];
 
+    const owner = newResource.owner;
+
     const readUsersList = newResource.readUsers.map(user => user.uid);
     const writeUsersList = newResource.writeUsers.map(user => user.uid);
 
@@ -136,10 +138,14 @@ const checkPermission = (resource, perm) => {
     const readAccess = readUserAccess || readLabelsAccess ? true : false;
     const writeAccess = writeUserAccess || writeLabelsAccess ? true : false;
 
+    const ownerAccess = owner.uid === req.user.uid;
+
     switch (true) {
       case perm === "read" && readAccess:
         return next();
       case perm === "write" && writeAccess:
+        return next();
+      case perm === "owner" && ownerAccess:
         return next();
       default:
         return res.status(403).json({ error: true, message: "You do not have the necessary permissions!" });
