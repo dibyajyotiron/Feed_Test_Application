@@ -8,7 +8,7 @@ function checkReadWriteConflict(readUsers, writeUsers) {
 module.exports = {
   validateReqBody(joiSchema) {
     return (req, res, next) => {
-      const { error } = joiSchema(req.body);
+      const { error } = joiSchema(req.body, req);
       const { readUsers, writeUsers } = req.body;
 
       if (joiSchema.name === "validateFeedSchema" && checkReadWriteConflict(readUsers, writeUsers))
@@ -17,7 +17,7 @@ module.exports = {
       if (error)
         return res.status(400).json({
           error: true,
-          message: error.message
+          message: error.details ? error.details[0].message : error.message
         });
       return next();
     };
