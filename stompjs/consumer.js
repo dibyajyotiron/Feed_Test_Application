@@ -1,13 +1,7 @@
 global.WebSocket = require("ws");
+require("../lib/util");
 
 const Stomp = require("@stomp/stompjs");
-
-if (typeof TextEncoder !== "function") {
-  const TextEncodingPolyfill = require("util");
-  TextEncoder = TextEncodingPolyfill.TextEncoder;
-  TextDecoder = TextEncodingPolyfill.TextDecoder;
-}
-
 const stompConfig = {
   brokerURL: "ws://localhost:61614/ws",
   connectHeaders: {
