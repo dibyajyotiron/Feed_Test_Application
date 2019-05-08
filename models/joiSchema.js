@@ -30,18 +30,24 @@ module.exports = {
     return Joi.validate(comment, schema);
   },
 
-  validateFeedSchema(feed) {
+  validateFeedSchema(feed, req) {
     const schema = {
       name: Joi.string().max(100),
       description: Joi.string().max(500),
-      targetElementType: Joi.string()
-        .required()
-        .max(20),
-      targetElementUid: Joi.string().required(),
-      targetElementStage: Joi.string()
-        .valid("Therm", "Eye", "Terra", "Core")
-        .required()
-        .error(new Error("Please provide valid stage name!")),
+      targetElementType:
+        req.method === "POST"
+          ? Joi.string()
+              .required()
+              .max(20)
+          : Joi.forbidden().error(new Error("Target Element cannot be changed!")),
+      targetElementUid: req.method === "POST" ? Joi.string().required() : Joi.forbidden().error(new Error("Target Element cannot be changed!")),
+      targetElementStage:
+        req.method === "POST"
+          ? Joi.string()
+              .valid("Therm", "Eye", "Terra", "Core")
+              .required()
+              .error(new Error("Please provide valid stage name!"))
+          : Joi.forbidden().error(new Error("Target Element cannot be changed!")),
       readUsers: getReadWriteValidSchema("read"),
       writeUsers: getReadWriteValidSchema("write"),
       data: Joi.array().items(Joi.object()),
