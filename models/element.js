@@ -12,7 +12,11 @@ const elementSchema = new Schema({
     type: String,
     required: true
   },
-  data: Object
+  data: Object,
+  active: {
+    type: Boolean,
+    default: true
+  }
 });
 
 elementSchema.pre("save", function(next) {
