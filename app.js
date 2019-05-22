@@ -1,4 +1,4 @@
-require("dotenv");
+require("dotenv").config();
 const winston = require("./services/logger");
 const express = require("express");
 const app = express();
