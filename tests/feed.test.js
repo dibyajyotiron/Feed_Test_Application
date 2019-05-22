@@ -4,8 +4,7 @@ const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
 const request = require("supertest");
-
-const { expect } = require("chai");
+// const { expect } = require("chai");
 const colors = require("colors");
 
 const { baseURL } = require("../config/keys");
@@ -18,26 +17,26 @@ const variables = {
   feedUID: "703db4d0-5087-11e9-bdb1-357aaf6bbbf5"
 };
 describe("Feed routes".blue, () => {
-  before(done => {
-    // making db connection
-    const db = mongoose.connection;
-    mongoose.connect(mongoURI, { useNewUrlParser: true, useCreateIndex: true });
-    db.on("error", logger.error.bind(console.name, "error"));
-    db.once("open", () => {
-      logger.info(`connected to ${mongoURI}`);
-      done();
-    });
+  beforeAll(done => {
+    function clearDB() {
+      for (let i in db.collections) {
+        db.collections[i].remove();
+      }
+      return done();
+    }
 
-    //remove residue
-    // insert data into db
-    require("../specs/helpers/populate_data/populate")(db);
+    const db = mongoose.connection;
+
+    if (db.readyState === 0) {
+      mongoose.connect(mongoURI, { useNewUrlParser: true, useCreateIndex: true });
+    }
+    return clearDB();
   });
 
-  after(done => {
+  afterAll(done => {
     // drop database and close connection
-    mongoose.connection.db.dropDatabase(() => {
-      mongoose.connection.close(done);
-    });
+    mongoose.disconnect();
+    return done();
   });
 
   const testCases = [
