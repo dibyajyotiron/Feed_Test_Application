@@ -9,6 +9,10 @@
     "prod": "NODE_ENV=production nodemon app.js",
     "test": "NODE_ENV=testing jest"
   },
+  "engines": {
+    "node": "10.15.0",
+    "npm": "6.9.0"
+  },
   "author": "Dibyajyoti Ghosal",
   "license": "MIT",
   "dependencies": {
