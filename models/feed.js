@@ -20,7 +20,7 @@ const feedSchema = new Schema(
     },
     targetElementStage: {
       type: String,
-      enum: ["Therm", "Eye", "Terra", "Core", "Ticket"]
+      enum: ["THERM", "EYE", "TERRA", "CORE", "TICKET"]
     },
     data: [Object],
     readUsers: { type: [user] },
