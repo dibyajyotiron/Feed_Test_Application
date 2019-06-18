@@ -14,10 +14,13 @@ const feedSchema = new Schema(
     owner: user,
     _element: { type: Schema.Types.ObjectId, ref: "element" },
     targetElementType: String,
-    targetElementUid: String,
+    targetElementUid: {
+      type: String,
+      required: true
+    },
     targetElementStage: {
       type: String,
-      enum: ["Therm", "Eye", "Terra", "Core"]
+      enum: ["Therm", "Eye", "Terra", "Core", "Ticket"]
     },
     data: [Object],
     readUsers: { type: [user] },
