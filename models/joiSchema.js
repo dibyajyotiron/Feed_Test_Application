@@ -44,7 +44,7 @@ module.exports = {
       targetElementStage:
         req.method === "POST"
           ? Joi.string()
-              .valid("Therm", "Eye", "Terra", "Core")
+              .valid("THERM", "EYE", "TERRA", "CORE", "TICKETS", "VAULT")
               .required()
               .error(new Error("Please provide valid stage name!"))
           : Joi.forbidden().error(new Error("Target Element cannot be changed!")),
