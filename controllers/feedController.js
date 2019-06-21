@@ -1,6 +1,6 @@
 const { Feed } = require("../models/feed");
 const { checkReadWriteConflict } = require("../middlewares/feedMiddleware");
-const { activateClient } = require("../services/broker/producer");
+// const { activateClient } = require("../services/broker/producer");
 
 const { uniqBy, uniq } = require("lodash");
 
@@ -30,6 +30,7 @@ module.exports = {
   },
   async createOrUpdateOrDeleteFeed(req, res) {
     let feed;
+    // targetElement stage will come from headers
     const {
       name,
       description,
@@ -76,14 +77,14 @@ module.exports = {
 
         feed = addReadAndWriteUsers(feed, readUsers, writeUsers);
         feed = addReadWriteLabels(feed, labelsRead, labelsWrite);
-        activateClient(feed, "FEED_CREATED", "/queue/t1");
+        // activateClient(feed, "FEED_CREATED", "/queue/t1");
         break;
       case "DELETE":
         feed = res.locals.feed;
         feed.active = false;
     }
 
-    // await feed.save(req);
+    await feed.save(req);
 
     return res.json({
       success: true,
@@ -115,7 +116,8 @@ module.exports = {
     });
   },
   async getAllFeeds(req, res) {
-    const feeds = await Feed.find();
+    // const feeds = await Feed.find();
+    const feeds = await Feed.aggregate([{ $match: { active: true } }]);
     return res.json(feeds);
   },
   getFeedByUID(req, res) {
