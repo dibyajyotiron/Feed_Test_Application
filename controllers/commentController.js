@@ -5,6 +5,8 @@ const io = require("../services/socket");
 const uuid = require("uuid/v1");
 const { groupBy } = require("lodash");
 
+// const logger = require("../services/logger");
+
 async function getAllComments(feed, queryParams = {}) {
   const pageSize = parseInt(queryParams.page_size || 15, 10);
   const pageNumber = parseInt(queryParams.page_number || 1, 10);
@@ -24,7 +26,6 @@ async function getAllComments(feed, queryParams = {}) {
       createdAt
     };
   });
-
   return mappedComments;
 }
 async function getAllCommentsWithVotes(comments) {
@@ -53,12 +54,11 @@ async function getAllCommentsWithVotes(comments) {
   ];
 
   const votes = await Vote.aggregate([...populateComments, ...projectComments]);
-
-  comments.forEach(comment => {
+  const votedComments = comments.map(comment => {
     comment.votes = votes.filter(vote => vote._comment === comment.uid);
+    return comment;
   });
-
-  return comments;
+  return votedComments;
 }
 
 module.exports = {
@@ -77,8 +77,19 @@ module.exports = {
     if (res.locals.comment) {
       comment._parentCommentUid = req.params.commentUID;
     }
+
+    // io.on("connection", socket => {
+    // socket.on("typing", data => {
+    //   socket.broadcast.emit("typing", data);
+    // });
+
+    //   socket.on("comments", comment => {
+    //     socket.emit(comment);
+    //   });
+    // });
+    io.getIO().emit("comments", comment);
+
     await comment.save();
-    io.getIO().emit("comments", { action: "create", comment });
     return res.json({ success: true, message: "Comment posted!" });
   },
   getComments: async (req, res) => {
