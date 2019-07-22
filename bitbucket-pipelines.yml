@@ -8,7 +8,7 @@ pipelines:
             name: Build, test and push to heroku
             # caches:
             #   - node
-            script: # Modify the commands below to build your repository.
+            script: # install dependencies, test and push to heroku.
               - npm install
               - npm test
               - git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git HEAD
