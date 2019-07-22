@@ -1,4 +1,3 @@
-const logger = require("../services/logger");
 module.exports = {
   notFoundError(req, res, next) {
     return res.status(404).json({
