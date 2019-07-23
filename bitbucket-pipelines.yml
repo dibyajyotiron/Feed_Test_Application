@@ -3,7 +3,7 @@ clone:
   depth: full
 pipelines:
     branches:
-      dibyajyoti:
+      master:
         - step:
             name: Build, test and push to heroku
             # caches:

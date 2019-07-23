@@ -7,7 +7,7 @@ jobs:
   build:
     branches:
       only: 
-        dibyajyoti
+        master
     docker:
       # specify the version you desire here
       - image: circleci/node:10.15.0
