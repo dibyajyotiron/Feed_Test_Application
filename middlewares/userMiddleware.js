@@ -73,16 +73,16 @@ const verifyToken = async (req, res, next) => {
         return next();
       }
       default:
-        return res.json({ error: true, message: "The auth token should start with JWT or TOKEN." });
+        return res.status(401).json({ error: true, message: "The auth token should start with JWT or TOKEN." });
     }
   } catch (error) {
-    return res.json({ error: true, message: error.message });
+    return res.status(error.response.status).json({ error: true, message: error.response.data.detail });
   }
 };
 
 const isActive = async (req, res, next) => {
   let user = req.user;
-  if (!user || user.status !== "ACTIVE") {
+  if (!user || user.status.toUpperCase() !== "ACTIVE") {
     return res.status(400).json({ error: true, message: "User is not active." });
   }
   return next();
@@ -115,6 +115,9 @@ const hasRoles = roles => {
 };
 const checkPermission = (resource, perm) => {
   return (req, res, next) => {
+    if (req.user.organization && (req.user.is_manager || req.user.is_owner)) return next();
+    if (ALLOWED_ROLES.includes(req.user.role)) return next();
+
     const newResource = res.locals[resource];
 
     const userLabels = req.user.labels || [];
