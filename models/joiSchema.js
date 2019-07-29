@@ -46,7 +46,7 @@ module.exports = {
           ? Joi.string()
               .valid("THERM", "EYE", "TERRA", "CORE", "TICKETS", "VAULT")
               .required()
-              .error(new Error("Please provide valid stage name!"))
+              .error(new Error("Please provide valid stage name in UPPERCASE!"))
           : Joi.forbidden().error(new Error("Target Element cannot be changed!")),
       readUsers: getReadWriteValidSchema("read"),
       writeUsers: getReadWriteValidSchema("write"),
