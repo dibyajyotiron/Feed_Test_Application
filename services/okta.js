@@ -17,6 +17,12 @@ const oktaHeader = {
   Authorization: `SSWS ${keys.okta.oktaAPIKey}`
 };
 
+const getExistingUsers = async token => {
+  const queryUrl = `${keys.tokenApi}/api/v1/api-token-auth`;
+  let { data } = await axios.get(queryUrl, { headers: { Authorization: `Token ${token}` } });
+  return data;
+};
+
 const getAppUsers = async () => {
   const queryUrl = `${keys.okta.url}/api/v1/users?limit=999999999`;
   let { data } = await axios.get(queryUrl, { headers: oktaHeader });
@@ -26,5 +32,6 @@ const getAppUsers = async () => {
 module.exports = {
   oktaJwtVerifier,
   oktaClient,
-  getAppUsers
+  getAppUsers,
+  getExistingUsers
 };

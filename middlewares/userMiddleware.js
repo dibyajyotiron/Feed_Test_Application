@@ -1,34 +1,24 @@
 const _ = require("lodash"),
   { ALLOWED_ROLES } = require("../constants"),
   { cacheStore } = require("../services/cache"),
-  { oktaClient, oktaJwtVerifier, getAppUsers } = require("../services/okta");
+  { oktaJwtVerifier, getExistingUsers } = require("../services/okta");
 
 const handleToken = async token => {
   const cachedUser = cacheStore.get(token);
   if (cachedUser) return cachedUser;
 
-  let users = [];
-  await oktaClient
-    .listUsers({
-      search: `profile.token eq "${token}"`
-    })
-    .each(user => users.push(user));
-
-  if (!users.length) return;
-  const oktaUser = users[0];
-
-  let appUsers = await getAppUsers();
-  if (!_.find(appUsers, appUser => appUser.profile.email === oktaUser.profile.email)) return null;
+  let existingUser = await getExistingUsers(token);
 
   const user = {
-    status: oktaUser.status,
-    role: oktaUser.profile.user_role,
-    uid: oktaUser.id,
-    email: oktaUser.profile.email,
-    organization: oktaUser.profile.organization,
-    is_owner: oktaUser.profile.is_owner,
-    is_manager: oktaUser.profile.is_manager,
-    labels: oktaUser.profile.labels
+    status: existingUser.status,
+    role: (existingUser.user_role || {}).name,
+    uid: existingUser.user_id,
+    email: existingUser.email,
+    app_permissions: existingUser.app_permissions || {},
+    organization: (existingUser.user_organization || {}).uid,
+    is_owner: existingUser.is_owner || false,
+    is_manager: existingUser.is_manager || false,
+    labels: (existingUser.labels || []).map(l => l.uid) || []
   };
 
   cacheStore.set(token, user);
@@ -51,28 +41,39 @@ const verifyToken = async (req, res, next) => {
     let [tokenType, accessToken] = tokenList;
 
     switch (tokenType.toUpperCase()) {
-      case "JWT":
+      case "JWT": {
         let jwt = await oktaJwtVerifier.verifyAccessToken(accessToken);
         req.user = {
           status: jwt.claims.status,
-          role: jwt.claims.role,
-          uid: jwt.claims.uid,
+          role: (jwt.claims.user_role || {}).name,
+          uid: jwt.claims.user_id,
           email: jwt.claims.email,
-          organization: jwt.claims.organization,
+          organization: (jwt.claims.user_organization || {}).uid,
+          app_permissions: jwt.claims.app_permissions || {},
           is_owner: jwt.claims.is_owner,
           is_manager: jwt.claims.is_manager,
-          labels: jwt.claims.labels
+          labels: (jwt.claims.labels || []).map(label => label.uid) || []
         };
+
+        if (!req.user.uid)
+          return res.status(httpStatusCodes.UNAUTHORIZED).json({
+            error: true,
+            message: "User is not logged in!"
+          });
+
         req.user.obj = { uid: req.user.uid.toString("hex"), email: req.user.email };
+
         return next();
-      case "TOKEN":
+      }
+      case "TOKEN": {
         let user = await handleToken(accessToken);
         if (!user) return res.json({ error: true, message: "Invalid token" });
         req.user = user;
-        req.user.obj = { uid: req.user.uid.toString("hex"), email: req.user.email };
+        req.user.obj = { uid: req.user.uid, email: req.user.email };
         return next();
+      }
       default:
-        return res.json({ error: true, message: "Not implemented yet." });
+        return res.json({ error: true, message: "The auth token should start with JWT or TOKEN." });
     }
   } catch (error) {
     return res.json({ error: true, message: error.message });
@@ -108,7 +109,7 @@ const isBot = async (req, res, next) => {
 
 const hasRoles = roles => {
   return (req, res, next) => {
-    if (!_.includes(roles, req.user.role)) return res.status(400).json({ error: true, message: "You do not have enough permissions" });
+    if (!roles.includes(req.user.role)) return res.status(400).json({ error: true, message: "You do not have enough permissions" });
     return next();
   };
 };

@@ -6,5 +6,6 @@ module.exports = {
     issuer: process.env.OKTA_ISSUER,
     clientId: process.env.OKTA_CLIENT_ID,
     oktaAPIKey: process.env.OKTA_API_KEY
-  }
+  },
+  tokenApi: "https://core-server.sensehawk.com"
 };
