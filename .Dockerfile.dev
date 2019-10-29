@@ -1,0 +1,8 @@
+FROM node:alpine
+WORKDIR '/app'
+COPY ./package.json ./
+RUN npm i pm2 -g
+RUN npm install
+COPY . .
+# CMD ["pm2-runtime", "ecosystem.config.js", "--only", "local"]
+CMD [ "npm", "run", "dev" ]

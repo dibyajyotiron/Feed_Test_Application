@@ -1,0 +1,15 @@
+version: "3"
+services:
+  api:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./
+    container_name: nodejs
+    restart: unless-stopped
+    ports:
+      - "4001:4001"
+    volumes:
+      - /node_modules
+      - ./:/app
+    env_file:
+      - ./.env
