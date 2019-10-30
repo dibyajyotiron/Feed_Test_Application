@@ -12,34 +12,34 @@ pipelines:
               - npm install
               - npm test
               - git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git HEAD
-pipelines:
-  branches:
-    code-deploy:
-    - step:
-        script:
-          - apt-get update
-          - apt-get install -y zip
-          - zip -r application.zip .
-          - pipe: atlassian/aws-code-deploy:0.2.5
-            variables:
-              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-              APPLICATION_NAME: $APPLICATION_NAME
-              S3_BUCKET: $S3_BUCKET
-              COMMAND: 'upload'
-              ZIP_FILE: 'application.zip'
-              VERSION_LABEL: 'my-app-1.0.0'
-          - pipe: atlassian/aws-code-deploy:0.2.5
-            variables:
-              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-              APPLICATION_NAME: $APPLICATION_NAME
-              DEPLOYMENT_GROUP: $DEPLOYMENT_GROUP_NAME
-              S3_BUCKET: $S3_BUCKET
-              COMMAND: 'deploy'
-              WAIT: 'true'
-              VERSION_LABEL: 'my-app-1.0.0'
-              IGNORE_APPLICATION_STOP_FAILURES: 'true'
-              FILE_EXISTS_BEHAVIOR: 'OVERWRITE'
+    branches:
+      code-deploy:
+      - step:
+          name: Build, test and push to AWS EC2
+          script:
+            - apt-get update
+            - apt-get install -y zip
+            - zip -r feed_backend.zip .
+            - pipe: atlassian/aws-code-deploy:0.2.5
+              variables:
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                APPLICATION_NAME: $APPLICATION_NAME
+                S3_BUCKET: $S3_BUCKET
+                COMMAND: 'upload'
+                ZIP_FILE: 'feed_backend.zip'
+                VERSION_LABEL: 'feed_backend-1.0.0'
+            - pipe: atlassian/aws-code-deploy:0.2.5
+              variables:
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                APPLICATION_NAME: $APPLICATION_NAME
+                DEPLOYMENT_GROUP: $DEPLOYMENT_GROUP_NAME
+                S3_BUCKET: $S3_BUCKET
+                COMMAND: 'deploy'
+                WAIT: 'false'
+                VERSION_LABEL: 'feed_backend-1.0.0'
+                IGNORE_APPLICATION_STOP_FAILURES: 'true'
+                FILE_EXISTS_BEHAVIOR: 'OVERWRITE'
