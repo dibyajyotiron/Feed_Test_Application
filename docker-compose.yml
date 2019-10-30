@@ -1,13 +1,13 @@
 version: "3"
 services:
-  api:
+  api-feed:
     build:
       dockerfile: Dockerfile.dev
       context: ./
-    container_name: nodejs
+    container_name: nodejs-feed
     restart: unless-stopped
     ports:
-      - "4001:4001"
+      - "4000:4000"
     volumes:
       - /node_modules
       - ./:/app
