@@ -39,7 +39,7 @@ pipelines:
                 DEPLOYMENT_GROUP: $DEPLOYMENT_GROUP_NAME
                 S3_BUCKET: $S3_BUCKET
                 COMMAND: 'deploy'
-                WAIT: 'false'
+                WAIT: 'true'
                 VERSION_LABEL: 'feed_backend-1.0.0'
                 IGNORE_APPLICATION_STOP_FAILURES: 'true'
                 FILE_EXISTS_BEHAVIOR: 'OVERWRITE'
