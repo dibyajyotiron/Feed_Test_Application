@@ -36,7 +36,7 @@ pipelines:
               AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
               AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
               APPLICATION_NAME: $APPLICATION_NAME
-              DEPLOYMENT_GROUP: $DEPLOYMENT_GROUP
+              DEPLOYMENT_GROUP: $DEPLOYMENT_GROUP_NAME
               S3_BUCKET: $S3_BUCKET
               COMMAND: 'deploy'
               WAIT: 'true'
