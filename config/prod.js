@@ -7,5 +7,5 @@ module.exports = {
     clientId: process.env.OKTA_CLIENT_ID,
     oktaAPIKey: process.env.OKTA_API_KEY
   },
-  tokenApi: "https://core-server.sensehawk.com"
+  tokenApi: "https://core-stage-server.sensehawk.com"
 };
