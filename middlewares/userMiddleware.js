@@ -39,7 +39,6 @@ const verifyToken = async (req, res, next) => {
         message: "Token required"
       });
     let [tokenType, accessToken] = tokenList;
-
     switch (tokenType.toUpperCase()) {
       case "JWT": {
         let jwt = await oktaJwtVerifier.verifyAccessToken(accessToken);
@@ -54,6 +53,7 @@ const verifyToken = async (req, res, next) => {
           is_manager: jwt.claims.is_manager,
           labels: (jwt.claims.labels || []).map(label => label.uid) || []
         };
+        req.claims = jwt.claims;
 
         if (!req.user.uid)
           return res.status(httpStatusCodes.UNAUTHORIZED).json({
@@ -70,13 +70,16 @@ const verifyToken = async (req, res, next) => {
         if (!user) return res.json({ error: true, message: "Invalid token" });
         req.user = user;
         req.user.obj = { uid: req.user.uid, email: req.user.email };
+        req.claims = user.existingUser;
         return next();
       }
       default:
         return res.status(401).json({ error: true, message: "The auth token should start with JWT or TOKEN." });
     }
   } catch (error) {
-    return res.status(error.response.status).json({ error: true, message: error.response.data.detail });
+    return res
+    .status(error.response.status)
+    .json({ error: true, message: error.message, reason: error.response.data.detail });
   }
 };
 

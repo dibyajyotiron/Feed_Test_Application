@@ -13,19 +13,22 @@ const oktaJwtVerifier = new OktaJwtVerifier({
   clientId: keys.okta.clientId
 });
 
-const oktaHeader = {
-  Authorization: `SSWS ${keys.okta.oktaAPIKey}`
+const getAppUsers = async (tokenTyp, token, orgUid) => {
+  let queryUrl, data;
+  if (orgUid)
+      queryUrl = `${config.get("tokenApi")}/api/v1/users/?organization=${orgUid}&active=true`;
+  else queryUrl = `${config.get("tokenApi")}/api/v1/users/?active=true`;
+
+  if (tokenTyp.toUpperCase() === "TOKEN")
+      data = (await axios.get(queryUrl, { headers: { Authorization: `Token ${token}` } })).data;
+  if (tokenTyp.toUpperCase() === "JWT")
+      data = (await axios.get(queryUrl, { headers: { Authorization: `JWT ${token}` } })).data;
+  return data;
 };
 
 const getExistingUsers = async token => {
   const queryUrl = `${keys.tokenApi}/api/v1/api-token-auth`;
   let { data } = await axios.get(queryUrl, { headers: { Authorization: `Token ${token}` } });
-  return data;
-};
-
-const getAppUsers = async () => {
-  const queryUrl = `${keys.okta.url}/api/v1/users?limit=999999999`;
-  let { data } = await axios.get(queryUrl, { headers: oktaHeader });
   return data;
 };
 
