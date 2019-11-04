@@ -3,4 +3,4 @@
 sudo pkill -9 node
 sudo service mongod restart
 cd /home/ubuntu/feed_backend_node
-npm run prod
+pm2 start --only production
