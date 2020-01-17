@@ -16,27 +16,27 @@ const logger = require("../services/logger");
 const variables = {
   feedUID: "703db4d0-5087-11e9-bdb1-357aaf6bbbf5"
 };
+
 describe("Feed routes".blue, () => {
-  beforeAll(done => {
+  let connection;
+  let db;
+
+  beforeAll(async () => {
     function clearDB() {
-      for (let i in db.collections) {
-        db.collections[i].remove();
+      for (let i in mongoose.connection.collections) {
+        mongoose.connection.collections[i].deleteMany();
       }
-      return done();
     }
 
-    const db = mongoose.connection;
-
-    if (db.readyState === 0) {
-      mongoose.connect(mongoURI, { useNewUrlParser: true, useCreateIndex: true });
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(mongoURI, { useNewUrlParser: true, useCreateIndex: true });
     }
     return clearDB();
   });
 
-  afterAll(done => {
+  afterAll(async () => {
     // drop database and close connection
-    mongoose.disconnect();
-    return done();
+    await mongoose.disconnect();
   });
 
   const testCases = [
