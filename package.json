@@ -7,7 +7,7 @@
     "start": "NODE_ENV=production node cluster.js",
     "dev": "NODE_ENV=development nodemon cluster.js",
     "prod": "NODE_ENV=production nodemon app.js",
-    "test": "NODE_ENV=testing mocha — reporter spec tests/unit/**/*.js",
+    "test": "NODE_ENV=testing mocha — reporter spec tests/feed.test.js",
     "e2e": "mocha — reporter spec tests/e2e/**/*.js — timeout 120000"
   },
   "engines": {

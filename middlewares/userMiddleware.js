@@ -77,9 +77,10 @@ const verifyToken = async (req, res, next) => {
         return res.status(401).json({ error: true, message: "The auth token should start with JWT or TOKEN." });
     }
   } catch (error) {
+    
     return res
-    .status(error.response.status)
-    .json({ error: true, message: error.message, reason: error.response.data.detail });
+    .status(error.status)
+    .json({ error: true, message: error.message});
   }
 };
 

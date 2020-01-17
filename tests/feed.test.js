@@ -4,38 +4,38 @@ const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
 const request = require("supertest");
-// const { expect } = require("chai");
+const { expect } = require("chai");
 const colors = require("colors");
 
-const { baseURL } = require("../config/keys");
-const { mongoURI } = require("../config/keys");
-const { validToken } = require("../config/keys");
-
-const logger = require("../services/logger");
+const { baseURL, mongoURI, validToken } = require("../config/keys");
 
 const variables = {
   feedUID: "703db4d0-5087-11e9-bdb1-357aaf6bbbf5"
 };
 
-describe("Feed routes".blue, () => {
-  let connection;
-  let db;
+function createMongoConnection(db) {
+  mongoose.connect(mongoURI, { useNewUrlParser: true, useCreateIndex: true });
+  db.on("error", console.error.bind(console, "connection error"));
+  db.once("open", function() {
+    console.log(`We are connected to ${db.name} database!\n`.cyan);
+  });
+}
+function clearDB(db) {
+  mongoose.connection.dropDatabase(() => {
+    console.log(`Cleaning - ${db.name} database dropped`.red);
+  });
+}
 
-  beforeAll(async () => {
-    function clearDB() {
-      for (let i in mongoose.connection.collections) {
-        mongoose.connection.collections[i].deleteMany();
-      }
-    }
-
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(mongoURI, { useNewUrlParser: true, useCreateIndex: true });
-    }
-    return clearDB();
+describe("Feed Routes".blue, async() => {
+  const db = mongoose.connection;
+  createMongoConnection(db);
+  before(async () => {
+    require("../specs/helpers/populate_data/populate")(db);
   });
 
-  afterAll(async () => {
+  after(async () => {
     // drop database and close connection
+    clearDB(db);
     await mongoose.disconnect();
   });
 
@@ -43,16 +43,16 @@ describe("Feed routes".blue, () => {
     {
       desc: "GET /feeds",
       motive: "should get all the feeds",
-      relativeURL: "feeds",
+      relativeURL: "/feeds",
       token: validToken,
       matcher: {
-        length: 4
+        length: 3
       }
     },
     {
       desc: "GET /feeds/:uid",
       motive: "should get a particular feed",
-      relativeURL: `feeds/${variables.feedUID}`,
+      relativeURL: `/feeds/${variables.feedUID}`,
       token: validToken,
 
       matcher: {
@@ -62,16 +62,22 @@ describe("Feed routes".blue, () => {
     {
       desc: "POST /feeds",
       motive: "should create a new feed",
-      relativeURL: "feeds",
+      relativeURL: "/feeds",
       token: validToken,
       body: {
         name: "An element oriented Feed",
         description: "new Feed",
         targetElementType: "group",
         targetElementUid: "12sdsdsa-asdsa3-sadsad-sweq",
-        targetElementStage: "Therm",
-        readUsers: [{ uid: "00uhtrlx9cXkw9r3l0h4", email: "user4@scm.com" }, { uid: "00uhtrlx9cXkw9r3l0h4", email: "user4@scm.com" }],
-        writeUsers: [{ uid: "00uhtrlx9cXkw9r3l0h8", email: "user2@scm.com" }, { uid: "00uhtrlx9cXkw9r3l0h9", email: "user3@scm.com" }],
+        targetElementStage: "THERM",
+        readUsers: [
+          { uid: "00uhtrlx9cXkw9r3l0h4", email: "user4@scm.com" },
+          { uid: "00uhtrlx9cXkw9r3l0h4", email: "user4@scm.com" }
+        ],
+        writeUsers: [
+          { uid: "00uhtrlx9cXkw9r3l0h8", email: "user2@scm.com" },
+          { uid: "00uhtrlx9cXkw9r3l0h9", email: "user3@scm.com" }
+        ],
         labelsRead: ["labels1", "labels2", "labels2"],
         labelsWrite: ["label", "label1"]
       },
@@ -82,16 +88,22 @@ describe("Feed routes".blue, () => {
     {
       desc: "PUT /feeds/:uid",
       motive: "should update a feed",
-      relativeURL: `feeds/${variables.feedUID}`,
+      relativeURL: `/feeds/${variables.feedUID}`,
       token: validToken,
       body: {
         name: "updated test feed",
         description: "test Feed",
         targetElementType: "group",
         targetElementUid: "12sdsdsa-asdsa3-sadsad-sweq",
-        targetElementStage: "Therm",
-        readUsers: [{ uid: "00uhtrlx9cXkw9r3l0h4", email: "user4@scm.com" }, { uid: "00uhtrlx9cXkw9r3l0h4", email: "user4@scm.com" }],
-        writeUsers: [{ uid: "00uhtrlx9cXkw9r3l0h8", email: "user2@scm.com" }, { uid: "00uhtrlx9cXkw9r3l0h9", email: "user3@scm.com" }],
+        targetElementStage: "THERM",
+        readUsers: [
+          { uid: "00uhtrlx9cXkw9r3l0h4", email: "user4@scm.com" },
+          { uid: "00uhtrlx9cXkw9r3l0h4", email: "user4@scm.com" }
+        ],
+        writeUsers: [
+          { uid: "00uhtrlx9cXkw9r3l0h8", email: "user2@scm.com" },
+          { uid: "00uhtrlx9cXkw9r3l0h9", email: "user3@scm.com" }
+        ],
         labelsRead: ["labels1", "labels2", "labels2"],
         labelsWrite: ["label", "label1"]
       },
@@ -100,12 +112,10 @@ describe("Feed routes".blue, () => {
       }
     }
   ];
-
   for (let testCase of testCases) {
     describe(testCase.desc, () => {
       it(testCase.motive, async () => {
         let response;
-
         switch (testCase.desc.split(" ")[0]) {
           case "GET":
             response = await request(baseURL)
@@ -130,8 +140,8 @@ describe("Feed routes".blue, () => {
               .set("Authorization", testCase.token);
             break;
         }
-        console.log(await request(baseURL).get(testCase.relativeURL));
-        console.log(baseURL, testCase.relativeURL);
+        // console.log(await request(baseURL).get(testCase.relativeURL).set("Authorization", testCase.token));
+        // console.log(`${baseURL}${testCase.relativeURL}`.italic);
         expect(response.status).to.equals(200);
         if (Array.isArray(response.body)) {
           expect(response.body.length).to.equals(testCase.matcher.length);

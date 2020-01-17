@@ -14,7 +14,7 @@ const allFeeds = [
     },
     targetElementType: "group",
     targetElementUid: "12sdsdsa-asdsa3-sadsad-sweq",
-    targetElementStage: "Therm",
+    targetElementStage: "THERM",
     _element: ObjectId("5cc6d3846b2afc401a2a4803"),
     description: "Hello Comment",
     readUsers: [
@@ -63,7 +63,7 @@ const allFeeds = [
     _element: ObjectId("5cc6d3846b2afc401a2a4803"),
     targetElementUid: "Abc1233423",
     targetElementType: "Abc1233423",
-    targetElementStage: "Therm",
+    targetElementStage: "THERM",
     readUsers: [
       {
         uid: "00uhtrlx9cXkw9r3l0h4",
@@ -104,7 +104,7 @@ const allFeeds = [
     _element: ObjectId("5cc6d3846b2afc401a2a4803"),
     targetElementUid: "Abc1233423",
     targetElementType: "Abc1233423",
-    targetElementStage: "Therm",
+    targetElementStage: "THERM",
     readUsers: [
       {
         uid: "00uhtrlx9cXkw9r3l0h4",
@@ -245,7 +245,7 @@ const allVotes = [
   }
 ];
 
-const allElements = [{ _id: ObjectId("5cc6d3846b2afc401a2a4803"), type: "group", data: "Therm", uid: "e75083a0-6a67-11e9-b2db-7170f20a862a", __v: 0 }];
+const allElements = [{ _id: ObjectId("5cc6d3846b2afc401a2a4803"), type: "group", data: "THERM", uid: "e75083a0-6a67-11e9-b2db-7170f20a862a", __v: 0 }];
 
 function populateDB(db, collection, data) {
   // insert data into db
